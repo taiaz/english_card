@@ -1,13 +1,15 @@
 import 'dart:math';
-
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:english_card/models/english_today.dart';
 import 'package:english_card/pages/control_page.dart';
 import 'package:english_card/values/app_assets.dart';
 import 'package:english_card/values/app_colors.dart';
 import 'package:english_card/values/app_styles.dart';
+import 'package:english_card/values/share_keys.dart';
 import 'package:english_card/widgets/app_button.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../packages/quote/quote_model.dart';
 import '../packages/quote/quote.dart';
@@ -44,13 +46,17 @@ class _HomePageState extends State<HomePage> {
     return newList;
   }
 
-  getEnglishToday() {
+  getEnglishToday() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int len = prefs.getInt(ShareKeys.counter) ?? 5;
     List<String> newList = [];
-    List<int> rans = fixedListRandom(len: 5, max: nouns.length);
+    List<int> rans = fixedListRandom(len: len, max: nouns.length);
     rans.forEach((index) {
       newList.add(nouns[index]);
     });
-    words = newList.map((e) => getQuote(e)).toList();
+    setState(() {
+      words = newList.map((e) => getQuote(e)).toList();
+    });
   }
 
   EnglishToday getQuote(String noun) {
@@ -66,8 +72,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _pageController = PageController(viewportFraction: 0.9);
-    getEnglishToday();
     super.initState();
+    getEnglishToday();
   }
 
   @override
@@ -110,8 +116,9 @@ class _HomePageState extends State<HomePage> {
               height: size.height * 1 / 10,
               padding: const EdgeInsets.all(16),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: AutoSizeText(
                 '"$quote"',
+                maxFontSize: 16,
                 style: AppStyles.h5.copyWith(
                   fontSize: 12,
                   color: AppColors.textColor,
